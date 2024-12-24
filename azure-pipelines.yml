@@ -1,0 +1,25 @@
+trigger:
+  branches:
+    include:
+      - main  # Run the pipeline whenever changes are pushed to the 'main' branch
+
+pool:
+  vmImage: 'ubuntu-latest'  # Use the latest Ubuntu VM for building
+
+steps:
+- task: NodeTool@0
+  inputs:
+    versionSpec: '14.x'  # Specify the Node.js version
+  displayName: 'Install Node.js'
+
+- script: npm install
+  displayName: 'Install Dependencies'  # Install required libraries
+
+- script: npm run build
+  displayName: 'Build Frontend'  # Build the React app
+
+- task: PublishBuildArtifacts@1
+  inputs:
+    pathToPublish: 'build'  # The React build folder
+    artifactName: 'drop'
+  displayName: 'Publish Build Artifacts'  # Save the built files for deployment
