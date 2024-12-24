@@ -4,7 +4,7 @@ trigger:
       - main  # Trigger pipeline on pushes to the 'main' branch
 
 pool:
-  vmImage: 'ubuntu-latest'  # Use Ubuntu environment for pipeline execution
+  name: SelfHostedAgents  # Use Ubuntu environment for pipeline execution
 
 # Steps for Frontend
 jobs:
