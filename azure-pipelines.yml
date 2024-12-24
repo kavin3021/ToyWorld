@@ -1,44 +1,67 @@
 trigger:
   branches:
     include:
-      - main  # Trigger the pipeline on changes to the 'main' branch
+      - main  # Trigger pipeline on pushes to the 'main' branch
 
 pool:
-  vmImage: 'ubuntu-latest'  # Use the latest Ubuntu image for building
+  vmImage: 'ubuntu-latest'  # Use Ubuntu environment for pipeline execution
 
-steps:
-# Step 1: Build the Frontend
-- task: NodeTool@0
-  inputs:
-    versionSpec: '14.x'  # Specify the Node.js version for the frontend
-  displayName: 'Install Node.js for Frontend'
-
-- script: |
-    cd frontend
-    npm install
-    npm run build
+# Steps for Frontend
+jobs:
+- job: BuildFrontend
   displayName: 'Build Frontend'
+  steps:
+    - task: NodeTool@0
+      inputs:
+        versionSpec: '14.x'  # Node.js version for Frontend
+      displayName: 'Install Node.js for Frontend'
 
-- task: PublishBuildArtifacts@1
-  inputs:
-    pathToPublish: 'frontend/build'  # Path to the React/Angular build folder
-    artifactName: 'frontend'
-  displayName: 'Publish Frontend Artifacts'
+    - checkout: self  # Checkout the code from the repository
 
-# Step 2: Build the Backend
-- task: NodeTool@0
-  inputs:
-    versionSpec: '14.x'  # Specify the Node.js version for the backend
-  displayName: 'Install Node.js for Backend'
+    - script: |
+        cd frontend  # Navigate to frontend directory
+        npm install  # Install frontend dependencies
+      displayName: 'Install Frontend Dependencies'
 
-- script: |
-    cd backend
-    npm install
-    npm run build
+    - script: |
+        cd frontend  # Navigate to frontend directory
+        npm run build  # Build the frontend application (React, Angular, etc.)
+      displayName: 'Build Frontend'
+
+    - task: PublishBuildArtifacts@1
+      inputs:
+        pathToPublish: 'frontend/dist'  # Assuming dist folder contains the built frontend
+        artifactName: 'frontendArtifact'
+        publishLocation: 'Container'
+      displayName: 'Publish Frontend Build Artifact'
+
+# Steps for Backend
+- job: BuildBackend
   displayName: 'Build Backend'
+  dependsOn: BuildFrontend  # Ensure the frontend build runs before backend
+  steps:
+    - task: NodeTool@0
+      inputs:
+        versionSpec: '14.x'  # Node.js version for Backend
+      displayName: 'Install Node.js for Backend'
 
-- task: PublishBuildArtifacts@1
-  inputs:
-    pathToPublish: 'backend/dist'  # Path to the backend build folder (update as needed)
-    artifactName: 'backend'
-  displayName: 'Publish Backend Artifacts'
+    - checkout: self  # Checkout the code from the repository
+
+    - script: |
+        cd backend  # Navigate to backend directory
+        npm install  # Install backend dependencies
+      displayName: 'Install Backend Dependencies'
+
+    - script: |
+        cd backend  # Navigate to backend directory
+        npm run build  # Optional: If backend has a build step
+      displayName: 'Build Backend'
+
+    - task: PublishBuildArtifacts@1
+      inputs:
+        pathToPublish: 'backend'  # Path to the backend folder or compiled files
+        artifactName: 'backendArtifact'
+        publishLocation: 'Container'
+      displayName: 'Publish Backend Build Artifact'
+
+# Optional: Add test steps for both Frontend and Backend if needed.
