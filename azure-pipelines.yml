@@ -1,0 +1,44 @@
+trigger:
+  branches:
+    include:
+      - main  # Trigger the pipeline on changes to the 'main' branch
+
+pool:
+  vmImage: 'ubuntu-latest'  # Use the latest Ubuntu image for building
+
+steps:
+# Step 1: Build the Frontend
+- task: NodeTool@0
+  inputs:
+    versionSpec: '14.x'  # Specify the Node.js version for the frontend
+  displayName: 'Install Node.js for Frontend'
+
+- script: |
+    cd frontend
+    npm install
+    npm run build
+  displayName: 'Build Frontend'
+
+- task: PublishBuildArtifacts@1
+  inputs:
+    pathToPublish: 'frontend/build'  # Path to the React/Angular build folder
+    artifactName: 'frontend'
+  displayName: 'Publish Frontend Artifacts'
+
+# Step 2: Build the Backend
+- task: NodeTool@0
+  inputs:
+    versionSpec: '14.x'  # Specify the Node.js version for the backend
+  displayName: 'Install Node.js for Backend'
+
+- script: |
+    cd backend
+    npm install
+    npm run build
+  displayName: 'Build Backend'
+
+- task: PublishBuildArtifacts@1
+  inputs:
+    pathToPublish: 'backend/dist'  # Path to the backend build folder (update as needed)
+    artifactName: 'backend'
+  displayName: 'Publish Backend Artifacts'
